@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 import os
 import re
 
 from pyspark import SparkConf
+from pyspark.shell import sqlContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 from pyspark.sql.functions import struct
@@ -37,16 +37,20 @@ def is_recipe_difficult(row):
         return 'Undefined'
 
 
-if __name__ == '__main__':
-    recipes_dir = 'recipes-etl'
-    conf = SparkConf().setAppName('DifficultyColumnAdd')
+if __name__ == "__main__":
+    recipes_dir = './recipes-etl'
+    conf = SparkConf().setAppName("DifficultyColumnAdd")
     spark = SparkSession \
         .builder \
-        .appName('IsRecipeDifficult') \
+        .appName("IsRecipeDifficult") \
         .getOrCreate()
 
-    df = spark.read.json('recipes.json')
-    chiles_df = df.where(col('ingredients').like('%chilli%'))
+    # I placed this file using: hadoop fs -put r.json /r.json
+    # df = spark.textFile('receipes.json', )
+
+    # df = sqlContext.sqlContext('/recipes.json')
+    df = spark.read.json('/recipes.json')
+    chiles_df = df.where(col('ingredients').like("%chilli%"))
     # chiles_varients = set(['chilies', 'chilly'])
     # chiles_df = df.select(df.columns).rdd.filter(lambda x: 'chilies' in str(x.ingredients)).toDF()
     # chiles_df = df.filter(lambda x: True if set(str(x.ingredients).split()) & chiles_varients else False)
@@ -56,7 +60,7 @@ if __name__ == '__main__':
         StringType())
 
     time_columns = ['prepTime', 'cookTime']
-    chiles_df = chiles_df.withColumn('difficulty',
+    chiles_df = chiles_df.withColumn("difficulty",
                                      transform_to_difficulty(struct([chiles_df[x] for x in time_columns])))
 
     chiles_df.write.parquet(os.path.join(recipes_dir, 'result'))
