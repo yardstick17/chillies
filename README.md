@@ -22,7 +22,7 @@ sudo docker run hello-world
  ```bash
 bash run.sh standalone # Make sure workers are running
 ```
-  
+
 
 ## To run on Cluster mode. Used docker based cluster addition and running on master container
  ```bash
